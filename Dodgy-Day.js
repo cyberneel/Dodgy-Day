@@ -173,6 +173,7 @@ function BombLogic() {
       // Spawn New Bomb
       SpawnBomb(vBomb);
       vBSprite.remove()
+      IncreaseSpeed();
     }
     vBSprite.y += 1;
   });
@@ -183,27 +184,43 @@ function BombLogic() {
       // Spawn New Bomb
       SpawnBomb(hBomb);
       hBSprite.remove();
+      IncreaseSpeed();
     }
     hBSprite.x += 1
   });
 }
-  
 
+// Increase speed
+function IncreaseSpeed() {
+  clearInterval(bombInterval);
+  bombInterval = setInterval(BombLogic, 1000-timeSecs*2);
+}
+  
+var hit = false;
 // Main Game Loop
 const playerObj = getFirst(player);
 function GameLoop() {
   var playerTile = getTile(playerObj.x, playerObj.y);
   // loop through the sprites at the tile
-  playerTile.forEach(sprite => {
-    if (sprite.type === vBomb || sprite.type === hBomb) {
-      health--;
-      if (health == 2) {
-        
-      if (health <= 0) {
-        PlayerOver();
+  if (playerTile.length < 2) {
+    hit = false;
+  }
+  if (!hit) {
+    playerTile.forEach(sprite => {
+      if (sprite.type === vBomb || sprite.type === hBomb) {
+        hit = true;
+        health--;
+        if (health == 2) {
+          getAll(heart)[0].remove();
+        } else if (health == 1) {
+          getAll(heart)[0].remove();
+        } else if (health <= 0) {
+          getAll(heart)[0].remove();
+          PlayerOver();
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 // Time increase, used for difficulty later
@@ -215,7 +232,7 @@ function UpdateTime() {
 
 const gameInterval = setInterval(GameLoop, 100);
 
-const bombInterval = setInterval(BombLogic, 1000);
+var bombInterval = setInterval(BombLogic, 1000);
 
 const timeInterval = setInterval(UpdateTime, 1000);
 
