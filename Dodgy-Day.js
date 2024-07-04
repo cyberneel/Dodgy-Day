@@ -11,6 +11,7 @@ https://sprig.hackclub.com/gallery/getting_started
 const player = "p"
 const vBomb = "b"
 const hBomb = "h"
+const heart = "e"
 
 setLegend(
   [ player, bitmap`
@@ -63,6 +64,23 @@ setLegend(
 ...HHHHHHHHHH...
 .....HHHHHH.....
 ................
+................`],
+  [heart, bitmap`
+...........99...
+..99......9999..
+.99999...99999..
+.999999.9999999.
+.99999999999999.
+.99999999999999.
+.99999999999999.
+.99999999999999.
+.99999999999999.
+.9999999999999..
+..999999999999..
+...9999999999...
+....99999999....
+......99999.....
+........99......
 ................`]
 )
 
@@ -70,11 +88,12 @@ setSolids([])
 
 let level = 0
 
-var timeSecs = 0
+var timeSecs = 0;
+var health = 3;
 
 const levels = [
   map`
-...............
+eee............
 ..........b....
 .h.............
 ...............
@@ -177,7 +196,12 @@ function GameLoop() {
   // loop through the sprites at the tile
   playerTile.forEach(sprite => {
     if (sprite.type === vBomb || sprite.type === hBomb) {
-      PlayerOver();
+      health--;
+      if (health == 2) {
+        
+      if (health <= 0) {
+        PlayerOver();
+      }
     }
   });
 }
