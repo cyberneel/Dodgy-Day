@@ -9,7 +9,8 @@ https://sprig.hackclub.com/gallery/getting_started
 */
 
 const player = "p"
-const bomb = "b"
+const vBomb = "b"
+const hBomb = "h"
 
 setLegend(
   [ player, bitmap`
@@ -29,38 +30,58 @@ setLegend(
 ......0..0......
 ......0..0......
 ......0..0......` ],
-  [bomb, bitmap`
-....33333333....
+  [vBomb, bitmap`
+................
+................
+.....333333.....
+...3333333333...
 ...3333333333...
 ..333333333333..
-.33333333333333.
-3333333333333333
-3333333333333333
-3333333333333333
-3333333333333333
-3333333333333333
-3333333333333333
-3333333333333333
-3333333333333333
-.33333333333333.
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
 ..333333333333..
 ...3333333333...
-....33333333....`]
+...3333333333...
+.....333333.....
+................
+................`],
+  [hBomb, bitmap`
+................
+................
+.....HHHHHH.....
+...HHHHHHHHHH...
+...HHHHHHHHHH...
+..HHHHHHHHHHHH..
+..HHHHHHHHHHHH..
+..HHHHHHHHHHHH..
+..HHHHHHHHHHHH..
+..HHHHHHHHHHHH..
+..HHHHHHHHHHHH..
+...HHHHHHHHHH...
+...HHHHHHHHHH...
+.....HHHHHH.....
+................
+................`]
 )
 
 setSolids([])
 
 let level = 0
+
+var timeSecs = 0
+
 const levels = [
   map`
 ...............
-...............
-...............
+..........b....
+.h.............
 ...............
 ......b........
 ...............
 ...............
-...............
+h..............
 ...............
 ...............
 .............p.
@@ -99,10 +120,10 @@ function getRndInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-// player Checks
-function PlayerLogic() {
+// player died
+function PlayerOver() {
   playerObj.remove();
-  addText("GAME OVER", {
+  addText("GAME OVER\nScore: " + timeSecs, {
     x: 5,
     y: 12, 
     color: color`5`
@@ -110,26 +131,42 @@ function PlayerLogic() {
   // gameOver = true;
   clearInterval(gameInterval);
   clearInterval(bombInterval);
+  clearInterval(timeInterval);
 }
 
 // Spawn bomb
-function SpawnBomb() {
-  addSprite(getRndInt(0,width()-1),0,bomb);
+function SpawnBomb(type) {
+  if (type === vBomb) {
+    addSprite(getRndInt(0,width()-1),0,type);
+  } else if (type === hBomb) {
+    addSprite(0,getRndInt(0,height()-1),type);
+  }
 }
 
 // Bomb Checks
 function BombLogic() {
-  var bombSprites = getAll(bomb);
+  var vBombSprites = getAll(vBomb)
+  var hBombSprites = getAll(hBomb);
 
-  bombSprites.forEach(BSprite => {
-    if (BSprite.y == height()-1) {
+  // vertical bombs
+  vBombSprites.forEach(vBSprite => {
+    if (vBSprite.y == height()-1) {
       // Spawn New Bomb
-      SpawnBomb();
-      BSprite.remove()
+      SpawnBomb(vBomb);
+      vBSprite.remove()
     }
-    BSprite.y += 1;
+    vBSprite.y += 1;
   });
 
+  // Horizontal bombs
+  hBombSprites.forEach(hBSprite => {
+    if (hBSprite.x == width()-1) {
+      // Spawn New Bomb
+      SpawnBomb(hBomb);
+      hBSprite.remove();
+    }
+    hBSprite.x += 1
+  });
 }
   
 
@@ -139,14 +176,22 @@ function GameLoop() {
   var playerTile = getTile(playerObj.x, playerObj.y);
   // loop through the sprites at the tile
   playerTile.forEach(sprite => {
-    if (sprite.type === bomb) {
-      PlayerLogic();
+    if (sprite.type === vBomb || sprite.type === hBomb) {
+      PlayerOver();
     }
   });
 }
 
+// Time increase, used for difficulty later
+function UpdateTime() {
+  timeSecs++;
+}
+
+// Run the logic loops periodically
 
 const gameInterval = setInterval(GameLoop, 100);
 
 const bombInterval = setInterval(BombLogic, 1000);
+
+const timeInterval = setInterval(UpdateTime, 1000);
 
