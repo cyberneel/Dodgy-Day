@@ -91,15 +91,47 @@ onInput("d", () => {
 })
 
 afterInput(() => {
-  GameLoop();
-
+  
 })
 
 // Random Number Gen
-function getRndInteger(min, max) {
+function getRndInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// player Checks
+function PlayerLogic() {
+  playerObj.remove();
+  addText("GAME OVER", {
+    x: 5,
+    y: 12, 
+    color: color`5`
+  });
+  // gameOver = true;
+  clearInterval(gameInterval);
+  clearInterval(bombInterval);
+}
+
+// Spawn bomb
+function SpawnBomb() {
+  addSprite(getRndInt(0,width()-1),0,bomb);
+}
+
+// Bomb Checks
+function BombLogic() {
+  var bombSprites = getAll(bomb);
+
+  bombSprites.forEach(BSprite => {
+    if (BSprite.y == height()-1) {
+      // Spawn New Bomb
+      SpawnBomb();
+      BSprite.remove()
+    }
+    BSprite.y += 1;
+  });
+
+}
+  
 
 // Main Game Loop
 const playerObj = getFirst(player);
@@ -108,12 +140,13 @@ function GameLoop() {
   // loop through the sprites at the tile
   playerTile.forEach(sprite => {
     if (sprite.type === bomb) {
-      playerObj.remove()
-      addText("GAME OVER", {
-        x: 5,
-        y: 12,
-        color: color`5`
-      })
+      PlayerLogic();
     }
   });
 }
+
+
+const gameInterval = setInterval(GameLoop, 100);
+
+const bombInterval = setInterval(BombLogic, 1000);
+
